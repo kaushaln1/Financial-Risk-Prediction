@@ -1,0 +1,36 @@
+graph TD
+    %% Styling
+    classDef storage fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef compute fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    classDef infra fill:#fff3e0,stroke:#880e4f,stroke-width:2px;
+    classDef actor fill:#fff9c4,stroke:#ff6f00,stroke-width:2px;
+
+    subgraph "Data & Features"
+        RawData[(Raw Data<br/>Parquet)]:::storage -->|Generate| FeatureGen[Feature Generation]:::compute
+        FeatureGen -->|Ingest| FeatureStore[Feast Feature Store]:::compute
+        FeatureStore -->|Materialize| Redis[(Redis<br/>Online Store)]:::storage
+        FeatureStore -->|Historical Retrieval| Trainer
+    end
+
+    subgraph "Model Development"
+        Trainer[Training Job<br/>Scikit-Learn]:::compute -->|Log Metrics| MLflowSvc[MLflow Tracking Server]:::compute
+        Trainer -->|Save Artifacts| Minio[(Minio<br/>S3 Storage)]:::storage
+        Trainer -->|Register| Registry[Model Registry]:::storage
+        MLflowSvc --> Postgres[(Postgres DB)]:::storage
+    end
+
+    subgraph "Production Inference"
+        Client((User Request)):::actor -->|POST /predict| API[FastAPI Inference Service]:::compute
+        API -->|1. Get Features| Redis
+        API -->|2. Load Model| Registry
+        Registry -.->|Fetch Weights| Minio
+        API -->|3. Return Score| Client
+    end
+
+    subgraph "Kubernetes Infrastructure (Minikube)"
+        K8s[Kubernetes Cluster]:::infra
+        K8s --- MLflowSvc
+        K8s --- API
+        K8s --- Redis
+        K8s --- Minio
+    end

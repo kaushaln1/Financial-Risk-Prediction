@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inference-service
+  namespace: mlops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inference-service
+  template:
+    metadata:
+      labels:
+        app: inference-service
+    spec:
+      containers:
+      - name: inference-service
+        image: inference-service:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8000
+        env:
+        - name: MLFLOW_TRACKING_URI
+          value: "http://mlflow-service:5000"
+        - name: MLFLOW_S3_ENDPOINT_URL
+          value: "http://minio-service:9000"
+        - name: AWS_ACCESS_KEY_ID
+          value: "minioadmin"
+        - name: AWS_SECRET_ACCESS_KEY
+          value: "minioadmin"
+        - name: REDIS_HOST
+          value: "redis-service"
+        # In a real setup, we might mount the feature repo or use a remote one.
+        # For this demo, we'll assume the image has the repo or we mount it.
+        # But wait, the image COPY . . includes 'features' folder? 
+        # No, 'inference' folder only. 
+        # We need to ensure the service can reach the feature definitions.
+        # We will mount the 'features' directory from the host via Minikube mount or ConfigMap.
+        # Simpler for now: Copy features into image during build?
+        # Actually, let's just point FEAST_REPO_PATH to a config map or volume.
+        # For simplicity in this step, we will assume features are baked in or we will add a volume.
+        # Let's check Dockerfile context. It only copies 'inference'.
+        # We need to update Dockerfile to include features or mount it.

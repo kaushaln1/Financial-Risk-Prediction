@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+pydantic-settings
+feast[redis,postgres]
+mlflow
+scikit-learn
+pandas
+boto3
+prometheus-fastapi-instrumentator

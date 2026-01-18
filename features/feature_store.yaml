@@ -1,0 +1,10 @@
+project: financial_risk
+registry: data/registry.db
+provider: local
+online_store:
+  type: redis
+  connection_string: ${REDIS_HOST}:6379
+offline_store:
+  type: file
+entity_key_serialization_version: 2
+

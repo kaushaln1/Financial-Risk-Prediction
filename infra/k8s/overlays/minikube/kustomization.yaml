@@ -1,0 +1,22 @@
+resources:
+- ../../base
+
+patches:
+# Patch to expose services via NodePort for local access if needed, 
+# or we can rely on port-forwarding. 
+# For minikube, NodePort is often convenient.
+- target:
+    kind: Service
+    name: mlflow-service
+  patch: |-
+    - op: replace
+      path: /spec/type
+      value: NodePort
+- target:
+    kind: Service
+    name: minio-service
+  patch: |-
+    - op: replace
+      path: /spec/type
+      value: NodePort
+

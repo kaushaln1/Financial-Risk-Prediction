@@ -1,0 +1,10 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'fastapi'
+    metrics_path: '/metrics'
+    static_configs:
+      # Assuming the inference service is named 'inference-service' in K8s
+      - targets: ['inference-service:8000'] 
+
